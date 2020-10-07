@@ -1,6 +1,7 @@
 import { validate, validateSync } from "class-validator";
 import { Request, Response } from "express";
 import { Between, getRepository } from "typeorm";
+import { Product } from "../entity/Product";
 import { Purchases } from "../entity/Purchases";
 
 class PurchasesController {
@@ -14,7 +15,7 @@ class PurchasesController {
 
         reqPurchases.forEach(reqPurchase => {
             const purchase: Purchases = new Purchases();
-            purchase.productId = reqPurchase.productId;
+            purchase.product = reqPurchase.product;
             purchase.price = reqPurchase.price;
             purchase.quantity = reqPurchase.quantity;
             const error = validateSync(purchase);
@@ -32,8 +33,7 @@ class PurchasesController {
             res.json({ message: 'Saved purchases' });
         } catch (e) {
             res.status(400).json({ message: 'Error saving purchases', error: e });
-        }
-
+        }     
 
     }
 
@@ -46,7 +46,7 @@ class PurchasesController {
         }
 
         try{
-            purchases = await purchaseRepository.find({date: Between(from, to)});
+            purchases = await purchaseRepository.find({relations: ["product"],where:{date: Between(from, to)}});
             res.send(purchases);
         }
         catch(e) {

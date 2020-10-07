@@ -1,4 +1,4 @@
-import {Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Unique, OneToOne, JoinColumn, ManyToOne, OneToMany, UpdateDateColumn} from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Unique, OneToOne, JoinColumn, ManyToOne, OneToMany, UpdateDateColumn } from "typeorm";
 import { MinLength, IsNotEmpty, IsEmail, Min, validateSync } from "class-validator";
 import { User } from "./User";
 import { Sale } from "./Sale";
@@ -7,18 +7,18 @@ import { Sale } from "./Sale";
 export class Sales {
 
     @PrimaryGeneratedColumn()
-    id: number;    
+    id: number;
 
     @Column()
     @IsNotEmpty()
-    @UpdateDateColumn()    
+    @UpdateDateColumn()
     date: Date;
 
     //TODO: Comprobar que sea un TINYINT(1)
-    @Column({default: false})
-    crediCard: boolean;
+    @Column({ default: false })
+    creditCard: boolean;
 
-    @ManyToOne( type => User, user => user.sales)
+    @ManyToOne(type => User, user => user.sales)
     user: User;
 
     @OneToMany(type => Sale, sale => sale.sales)
@@ -31,10 +31,15 @@ export class Sales {
         }
         sales.forEach(element => {
             let sale: Sale = new Sale();
-            sale.productId = element.idProduct;
+            if (element.product) {
+                sale.product = element.product;
+            } else {
+                sale.productId = element.productId;
+            }
             sale.price = element.price;
             sale.quantity = element.quantity;
             sale.salesId = idsales || 0;
+            //TODO: Crear un error si el stock es menor que la cantidad comprada
             const error = validateSync(sale);
             if (error.length > 0) {
                 salesList.errors.push(error);
@@ -44,5 +49,5 @@ export class Sales {
         console.log("La sales list", salesList);
         return salesList;
     }
- 
+
 }

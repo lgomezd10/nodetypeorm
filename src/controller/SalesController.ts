@@ -13,16 +13,16 @@ class SalesController {
         let errors = [];
         let sales = new Sales();
         let saved: Sales;
-        let arraySales = req.body.sales;
+        let arraySales = req.body.sale;
         let arraySaved: Sale[] = [];
-        sales.crediCard = req.body.crediCard;
-
-
+        sales.creditCard = req.body.crediCard;
+        
         if (!(arraySales && (arraySales.length > 0))) {
             return res.status(400).json({ message: 'there arent sales to save' });
         }
 
         const salida = Sales.validateArray(arraySales);
+        console.log("LAS VENTAS ANTES DE GUARDAR", salida);
 
         if (salida.errors.length > 0) {
             return res.status(400).json({ message: 'Error to validate sales. Saved Nothing', errors: salida.errors });
@@ -41,10 +41,13 @@ class SalesController {
 
         try {
             await saleRepository.save(salida.sales);
-            res.json({ message: 'saved sales' })
+            res.json({ message: 'saved sales' , salesId: saved.id})
+            
         } catch (error) {
-            res.status(400).json({ message: 'Errors saving sales', errors: error });
+            await salesRepository.delete(saved);
+            res.status(400).json({ message: 'Errors saving sales. Deleted sales', errors: error });
         }
+        
     }
 
     static postUpdateSales = async (req: Request, res: Response) => {
@@ -81,7 +84,7 @@ class SalesController {
         // remove all sale with idSales
         try {
             if (creditCard) {
-                sales.crediCard = creditCard;
+                sales.creditCard = creditCard;
                 await salesRepository.save(sales);
             }
             console.log("Llega hasta pepito");
@@ -95,7 +98,7 @@ class SalesController {
         // save new sales
         try {
             await saleRepository.save(arraySaved.sales);
-            res.json({ message: 'saved sales' })
+            res.json({ message: 'saved sales', salesId })
         } catch (error) {
             res.status(400).json({ message: 'Error to save new sales after drop old sales', errors: error });
         }
@@ -103,7 +106,7 @@ class SalesController {
 
     }
 
-    static getSales = async (req: Request, res: Response) => {
+    static getSale = async (req: Request, res: Response) => {
         const salesRepository = getRepository(Sales);
         const saleRepository = getRepository(Sale);
         const { id } = req.params;
@@ -119,8 +122,9 @@ class SalesController {
         }
 
         try {
-            salesList = await saleRepository.find({ sales });
-            res.json({ creditCard: sales.creditCard, date: sales.date, elements: salesList });
+            salesList = await saleRepository.find({ relations: ["product"], where: {sales} });
+            sales.sale = salesList;
+            res.send(sales);
         } catch (error) {
             res.status(400).json({ message: 'Sales not found' });
         }
@@ -140,7 +144,8 @@ class SalesController {
 
         try {           
 
-            sales = await salesRepository.find({relations: ["sale"], where: {date: Between(from, to)}})
+            sales = await salesRepository.find({relations: ["sale"], where: {date: Between(from, to)}});
+            console.log("Estas son las sales por fecha", sales)        
             res.send(sales);
         }
         catch (e) {

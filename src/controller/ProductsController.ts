@@ -42,17 +42,26 @@ class ProductsController {
         product.price = price;
         product.type = type;
 
+        
         const errors = await validate(product);
         if(errors.length > 0) {
             return res.status(400).json({message: 'Error to validate product', errors});
         }    
 
         try {
-            await productsRepository.save(product);
-            res.json({message: 'product saved'})
+            await productsRepository.save(product);            
+            
+            res.json({message: 'product saved'});           
+            
         } catch (error) {
             res.status(400).json({message: 'product already exists', error});
         }
+
+        let products = await productsRepository.find();
+        const socket =require('../index');
+        socket.emit('updateProducts', products);
+
+       
     }
     static postUpdateProduct = async (req: Request, res: Response) => { 
         let product: Product
@@ -76,13 +85,18 @@ class ProductsController {
 
         try {
             await productsRepository.save(product);
-            res.json({message: 'Product Update'});
+            res.send(product);
         } catch (error) {
             res.status(409).json({error});
         }
 
+        let products = await productsRepository.find();
+        const socket =require('../index');
+        socket.emit('updateProducts', products);
+
 
     }
+
     static deleteProduct = async (req: Request, res: Response) => { 
         const { id } = req.params;
         let product: Product;
