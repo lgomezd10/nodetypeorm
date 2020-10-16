@@ -9,6 +9,7 @@ class PurchasesController {
 
         const purchaseRepository = getRepository(Purchases);
         let reqPurchases = req.body;
+        const {userId} = res.locals.jwtPayload;
         let errors = [];
 
         let purchases: Purchases[] = [];
@@ -18,6 +19,7 @@ class PurchasesController {
             purchase.product = reqPurchase.product;
             purchase.price = reqPurchase.price;
             purchase.quantity = reqPurchase.quantity;
+            purchase.userId = userId;
             const error = validateSync(purchase);
             if (error.length > 0) {
                 errors.push(error);
@@ -29,7 +31,7 @@ class PurchasesController {
         }
 
         try {
-            await purchaseRepository.save(reqPurchases);
+            await purchaseRepository.save(purchases);
             res.json({ message: 'Saved purchases' });
         } catch (e) {
             res.status(400).json({ message: 'Error saving purchases', error: e });
@@ -40,13 +42,14 @@ class PurchasesController {
     static postDatePurchase = async (req: Request, res: Response) => {
         const purchaseRepository = getRepository(Purchases);
         const {from, to} = req.body;
+        const { userId } = res.locals.jwtPayload;
         let purchases;
         if (!(req.body.from && req.body.to)) {
             return res.status(400).json({message: 'from and to required'})
         }
 
         try{
-            purchases = await purchaseRepository.find({relations: ["product"],where:{date: Between(from, to)}});
+            purchases = await purchaseRepository.find({relations: ["product"],where:{ userId, date: Between(from, to)}});
             res.send(purchases);
         }
         catch(e) {

@@ -1,28 +1,34 @@
-import {Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany} from "typeorm";
+import {Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany, Unique} from "typeorm";
 import { MinLength, IsNotEmpty, IsEmail } from "class-validator";
 import { Product } from "./Product";
 import { Sales } from "./Sales";
 import { Purchases } from "./Purchases";
 
 @Entity()
+@Unique(['username'])
 export class User {
 
     @PrimaryGeneratedColumn()
     id: number;
 
     @Column()
-    @IsEmail()
-    user: string;
+    @MinLength(4)
+    //@IsEmail()
+    @IsNotEmpty()
+    username: string;
 
     @Column()
-    name: string;
+    @MinLength(6)
+    @IsNotEmpty()
+    password: string;
+
+    @Column()
+    @IsNotEmpty()
+    role: string;
 
     @Column()
     @CreateDateColumn()
     createAt: Date;
-
-    @Column()
-    birthday: Date;
 
     @OneToMany(type => Product, product => product.user)
     product: Product[];

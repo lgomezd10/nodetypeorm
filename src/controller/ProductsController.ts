@@ -8,25 +8,27 @@ class ProductsController {
     static getAllProduct = async (req: Request, res: Response) => {
         let products: Product[];
         const productsRepository = getRepository(Product);
-
+        const {auth} = req.headers;
+        const { jwtPayload } = res.locals;
+        console.log("Desde GETALLPRODUCT el token", auth, "header", req.headers);
         try {
-            products = await productsRepository.find();
+            products = await productsRepository.find({where: {userId: jwtPayload.userId}});
         } catch (error) {
-            res.status(404).json({ message: 'Something goes wrong!', error });
+            res.status(406).json({ message: 'Something goes wrong!', error });
         }
 
-        if (products.length > 0) {
-            res.send(products);
-        } else {
-            res.status(404).json({ message: 'Not result' });
-        }
+        res.send(products);
     }
     static getOneProduct = async (req: Request, res: Response) => {
         const { id } = req.params;
         const productsRepository = getRepository(Product);
+        const { jwtPayload } = res.locals;  
 
         try {
             const product = await productsRepository.findOneOrFail(id);
+            if (product.userId != jwtPayload.userId) {
+                return res.status(402).json({message: 'product not found'})
+             }
             res.send(product);
         } catch (error) {
             res.status(404).json({ message: 'Product not found', error });
@@ -36,11 +38,14 @@ class ProductsController {
     static postNewProduct = async (req: Request, res: Response) => { 
         const productsRepository = getRepository(Product);
         const { name, price, type } = req.body;
-        let product: Product = new Product();
+        const { jwtPayload } = res.locals;
+        let product: Product = new Product();       
+
 
         product.name = name;
         product.price = price;
         product.type = type;
+        product.userId = jwtPayload.userId;
 
         
         const errors = await validate(product);
@@ -57,7 +62,7 @@ class ProductsController {
             res.status(400).json({message: 'product already exists', error});
         }
 
-        let products = await productsRepository.find();
+        let products = await productsRepository.find({where: {userId: jwtPayload.userId}});
         const socket =require('../index');
         socket.emit('updateProducts', products);
 
@@ -68,9 +73,13 @@ class ProductsController {
         const productsRepository = getRepository(Product);
         const { id } = req.params;
         const { name, price, type } = req.body;
+        const { jwtPayload } = res.locals;        
 
         try {
             product = await productsRepository.findOneOrFail(id);
+            if (product.userId != jwtPayload.userId) {
+               return res.status(402).json({message: 'product not found'})
+            }
             product.name = name;
             product.price = price;
             product.type = type;
@@ -90,7 +99,7 @@ class ProductsController {
             res.status(409).json({error});
         }
 
-        let products = await productsRepository.find();
+        let products = await productsRepository.find({where: {userId: jwtPayload.userId}});
         const socket =require('../index');
         socket.emit('updateProducts', products);
 
@@ -101,9 +110,13 @@ class ProductsController {
         const { id } = req.params;
         let product: Product;
         const productsRepository = getRepository(Product);
+        const { jwtPayload } = res.locals;  
 
         try {
             product = await productsRepository.findOneOrFail(id);
+            if (product.userId != jwtPayload.userId) {
+                return res.status(402).json({message: 'product not found'})
+             }
         } catch (error) {
             res.status(404).json({ message: 'Product not found', error });
         }

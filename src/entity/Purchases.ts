@@ -29,7 +29,11 @@ export class Purchases {
     @CreateDateColumn({type: "datetime"})
     date: Date;
 
+    @Column("int")
+    userId: number;
+
     @ManyToOne( type => User, user => user.purchases)
+    @JoinColumn({name: "userId"})
     user: User;
 
 }

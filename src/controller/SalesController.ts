@@ -16,6 +16,7 @@ class SalesController {
         let arraySales = req.body.sale;
         let arraySaved: Sale[] = [];
         sales.creditCard = req.body.crediCard;
+        sales.userId = res.locals.jwtPayload.userId;
         
         if (!(arraySales && (arraySales.length > 0))) {
             return res.status(400).json({ message: 'there arent sales to save' });
@@ -57,6 +58,7 @@ class SalesController {
         console.log("El body: ", req.body);
         const { creditCard } = req.body;
         const salesId: any = req.params.id;
+        const userId = res.locals.jwtPayload.userId;
         let sales: Sales;
         let arraySales = req.body.sales;
         let arraySaved;
@@ -68,7 +70,7 @@ class SalesController {
         }
 
         try {
-            sales = await salesRepository.findOneOrFail(salesId);
+            sales = await salesRepository.findOneOrFail({where: {salesId, userId}});
         } catch (error) {
             res.status(400).json({ message: 'salesId not found', Errors: error });
         }
@@ -110,12 +112,13 @@ class SalesController {
         const salesRepository = getRepository(Sales);
         const saleRepository = getRepository(Sale);
         const { id } = req.params;
+        const userId = res.locals.jwtPayload.userId;
         console.log("El id es", id);
         let sales;
         let salesList;
 
         try {
-            sales = await salesRepository.findOneOrFail(id);
+            sales = await salesRepository.findOneOrFail({where: {id, userId}});
             console.log("Las sales son", sales);
         } catch (error) {
             res.status(400).json({ message: 'Sale not found' });
@@ -136,6 +139,7 @@ class SalesController {
         const salesRepository = getRepository(Sales);
         const saleRepository = getRepository(Sale);
         const { from, to } = req.body;
+        const userId = res.locals.jwtPayload.userId;
         let sales;
         let response = [];
         if (!(req.body.from && req.body.to)) {
@@ -144,7 +148,7 @@ class SalesController {
 
         try {           
 
-            sales = await salesRepository.find({relations: ["sale"], where: {date: Between(from, to)}});
+            sales = await salesRepository.find({relations: ["sale"], where: {date: Between(from, to), userId}});
             console.log("Estas son las sales por fecha", sales)        
             res.send(sales);
         }

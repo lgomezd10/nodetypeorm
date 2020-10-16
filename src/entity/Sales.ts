@@ -18,7 +18,11 @@ export class Sales {
     @Column({ default: false })
     creditCard: boolean;
 
-    @ManyToOne(type => User, user => user.sales)
+    @Column("int")
+    userId: number;
+
+    @ManyToOne( type => User, user => user.purchases)
+    @JoinColumn({name: "userId"})
     user: User;
 
     @OneToMany(type => Sale, sale => sale.sales)

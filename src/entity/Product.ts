@@ -6,7 +6,7 @@ import { Sales } from "./Sales";
 import { Sale } from "./Sale";
 
 @Entity()
-@Unique(['name'])
+@Unique(['name', 'userId'])
 export class Product {
 
     @PrimaryGeneratedColumn()
@@ -28,7 +28,11 @@ export class Product {
     @Column({default: 0})   
     stock: number;
 
+    @Column("int")
+    userId: number;
+
     @ManyToOne( type => User, user => user.product)
+    @JoinColumn({ name: "userId" })
     user: User;
 
     @OneToMany(type => Purchases, purchases => purchases.product)

@@ -1,19 +1,20 @@
 import { Router } from "express";
 import SalesController from "../controller/SalesController";
+import { checkJwt } from "../middlewares/jwt";
 
-const routes = Router();
+const router = Router();
 
 // get a sale
-routes.get('/sale/:id', SalesController.getSale);
+router.get('/sale/:id', [checkJwt], SalesController.getSale);
 
 // Save sales
-routes.post('/', SalesController.postSales);
+router.post('/', [checkJwt], SalesController.postSales);
 
 // Update sales
-routes.post('/update/:id', SalesController.postUpdateSales);
+router.post('/update/:id', [checkJwt], SalesController.postUpdateSales);
 
 
 // get a sale
-routes.post('/date', SalesController.postSalesByDate);
+router.post('/date', [checkJwt], SalesController.postSalesByDate);
 
-export default routes;
+export default router;

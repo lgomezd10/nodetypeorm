@@ -26,7 +26,7 @@ export class SaleSubscriber implements EntitySubscriberInterface<Sale> {
         const productRepository = getRepository(Product);
 
         try {
-            let product = await productRepository.findOneOrFail(event.entity.product.id);
+            let product = await productRepository.findOneOrFail({where: { id: event.entity.product.id}});
             if ((product.stock - event.entity.quantity) < 0) 
                 product.stock = 0
             else            

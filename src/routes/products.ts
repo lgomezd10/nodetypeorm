@@ -1,21 +1,22 @@
 import { Router } from "express";
 import ProductsController from '../controller/ProductsController';
+import { checkJwt } from "../middlewares/jwt";
 
-const routes = Router();
+const router = Router();
 
 // show All product
-routes.get('/', ProductsController.getAllProduct);
+router.get('/', [checkJwt], ProductsController.getAllProduct);
 
 // show single product
-routes.get('/:id', ProductsController.getOneProduct);
+router.get('/:id', [checkJwt], ProductsController.getOneProduct);
 
 //add new product
-routes.post('/', ProductsController.postNewProduct);
+router.post('/',  [checkJwt], ProductsController.postNewProduct);
 
 // update product
-routes.post('/:id', ProductsController.postUpdateProduct);
+router.post('/:id',  [checkJwt], ProductsController.postUpdateProduct);
 
 // delete product TODO: this method can't be used
-routes.delete('/:id', ProductsController.deleteProduct);
+router.delete('/:id',  [checkJwt], ProductsController.deleteProduct);
 
-export default routes;
+export default router;
