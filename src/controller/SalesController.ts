@@ -10,11 +10,9 @@ class SalesController {
     static postSales = async (req: Request, res: Response) => {
         const salesRepository = getRepository(Sales);
         const saleRepository = getRepository(Sale);
-        let errors = [];
         let sales = new Sales();
         let saved: Sales;
         let arraySales = req.body.sale;
-        let arraySaved: Sale[] = [];
         sales.creditCard = req.body.crediCard;
         sales.userId = res.locals.jwtPayload.userId;
         
@@ -23,7 +21,6 @@ class SalesController {
         }
 
         const salida = Sales.validateArray(arraySales);
-        console.log("LAS VENTAS ANTES DE GUARDAR", salida);
 
         if (salida.errors.length > 0) {
             return res.status(400).json({ message: 'Error to validate sales. Saved Nothing', errors: salida.errors });
@@ -55,7 +52,6 @@ class SalesController {
         const salesRepository = getRepository(Sales);
         const saleRepository = getRepository(Sale);
         let errors = [];
-        console.log("El body: ", req.body);
         const { creditCard } = req.body;
         const salesId: any = req.params.id;
         const userId = res.locals.jwtPayload.userId;
@@ -70,9 +66,9 @@ class SalesController {
         }
 
         try {
-            sales = await salesRepository.findOneOrFail({where: {salesId, userId}});
+            sales = await salesRepository.findOneOrFail({where: {id: salesId, userId}});
         } catch (error) {
-            res.status(400).json({ message: 'salesId not found', Errors: error });
+            res.status(404).json({ message: `SalesId: ${salesId}  not found`, Errors: error });
         }
 
         arraySaved = Sales.validateArray(arraySales, salesId);
@@ -89,9 +85,7 @@ class SalesController {
                 sales.creditCard = creditCard;
                 await salesRepository.save(sales);
             }
-            console.log("Llega hasta pepito");
             toDrop = await saleRepository.find({ where: { sales: sales } });
-            console.log("Llega hasta pepito 2");
             await saleRepository.remove(toDrop);
         } catch (error) {
             res.status(400).json({ message: 'Error to update sales or remove old sales', Errors: error });
@@ -121,7 +115,7 @@ class SalesController {
             sales = await salesRepository.findOneOrFail({where: {id, userId}});
             console.log("Las sales son", sales);
         } catch (error) {
-            res.status(400).json({ message: 'Sale not found' });
+            res.status(404).json({ message: 'Sale not found' });
         }
 
         try {
@@ -129,7 +123,7 @@ class SalesController {
             sales.sale = salesList;
             res.send(sales);
         } catch (error) {
-            res.status(400).json({ message: 'Sales not found' });
+            res.status(404).json({ message: 'Sales not found' });
         }
 
 

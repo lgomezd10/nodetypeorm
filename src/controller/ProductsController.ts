@@ -27,7 +27,7 @@ class ProductsController {
         try {
             const product = await productsRepository.findOneOrFail(id);
             if (product.userId != jwtPayload.userId) {
-                return res.status(402).json({message: 'product not found'})
+                return res.status(404).json({message: 'product not found'})
              }
             res.send(product);
         } catch (error) {
@@ -78,13 +78,13 @@ class ProductsController {
         try {
             product = await productsRepository.findOneOrFail(id);
             if (product.userId != jwtPayload.userId) {
-               return res.status(402).json({message: 'product not found'})
+               return res.status(404).json({message: 'product not found'})
             }
             product.name = name;
             product.price = price;
             product.type = type;
         } catch (error) {
-            res.status(400).json({message:'Product not found'});
+            res.status(404).json({message:'Product not found'});
         }
 
         const errors = await validate(product);
@@ -115,7 +115,7 @@ class ProductsController {
         try {
             product = await productsRepository.findOneOrFail(id);
             if (product.userId != jwtPayload.userId) {
-                return res.status(402).json({message: 'product not found'})
+                return res.status(404).json({message: 'product not found'})
              }
         } catch (error) {
             res.status(404).json({ message: 'Product not found', error });
