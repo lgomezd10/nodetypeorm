@@ -4,25 +4,25 @@ import { EventSubscriber } from "typeorm/decorator/listeners/EventSubscriber";
 import { EntitySubscriberInterface } from "typeorm/subscriber/EntitySubscriberInterface";
 import { InsertEvent } from "typeorm/subscriber/event/InsertEvent";
 import { Product } from "../entity/Product";
-import { Sale } from "../entity/Sale";
+import { ItemSale } from "../entity/ItemSale";
 
 @EventSubscriber()
-export class SaleSubscriber implements EntitySubscriberInterface<Sale> {
+export class SaleSubscriber implements EntitySubscriberInterface<ItemSale> {
 
 
     /**
      * Indicates that this subscriber only listen to Post events.
      */
     listenTo() {
-        return Sale;
+        return ItemSale;
     }
 
     /**
      * Called before post insertion.
      */
     
-     async afterInsert(event: InsertEvent<Sale>) {
-        console.log(`BEFORE POST INSERTED: `, event.entity);
+     async afterInsert(event: InsertEvent<ItemSale>) {
+        //console.log(`BEFORE POST INSERTED: `, event.entity);
         const productRepository = getRepository(Product);
 
         try {
@@ -38,8 +38,8 @@ export class SaleSubscriber implements EntitySubscriberInterface<Sale> {
         
     }
 
-    async afterRemove(event: RemoveEvent<Sale>) {
-        console.log(`BEFORE POST INSERTED: `, event.entity);
+    async afterRemove(event: RemoveEvent<ItemSale>) {
+        //console.log(`BEFORE POST INSERTED: `, event.entity);
         const productRepository = getRepository(Product);
 
         try {

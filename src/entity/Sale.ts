@@ -1,8 +1,7 @@
-import {Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Unique, OneToOne, JoinColumn, ManyToOne} from "typeorm";
-import { MinLength, IsNotEmpty, IsEmail, Min } from "class-validator";
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Unique, OneToOne, JoinColumn, ManyToOne, OneToMany, UpdateDateColumn } from "typeorm";
+import { MinLength, IsNotEmpty, IsEmail, Min, validateSync } from "class-validator";
 import { User } from "./User";
-import { Product } from "./Product";
-import { Sales } from "./Sales";
+import { ItemSale } from "./ItemSale";
 
 @Entity()
 export class Sale {
@@ -10,27 +9,50 @@ export class Sale {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({type: "float", unsigned: true})
-    @Min(0.01)
-    quantity: number;
+    @Column()
+    @IsNotEmpty()
+    @UpdateDateColumn()
+    date: Date;
 
-    @Column({type: "float", unsigned: true})
-    @Min(0.01)
-    price: number;
+    //TODO: Comprobar que sea un TINYINT(1)
+    @Column({ default: false })
+    creditCard: boolean;
 
-    @Column("int", { nullable: true })
-    salesId: number;
+    @Column("int")
+    userId: number;
 
-    @ManyToOne( type => Sales, sales => sales.sale)
-    @JoinColumn({ name: "salesId" })
-    sales: Sales;
+    @ManyToOne( type => User, user => user.purchases)
+    @JoinColumn({name: "userId"})
+    user: User;
 
-    @Column("int", { nullable: true })
-    productId: number;
+    @OneToMany(type => ItemSale, itemSale => itemSale.sale)
+    itemsSale: ItemSale[];
 
-    @ManyToOne( type => Product, product => product.sale)
-    @JoinColumn({ name: "productId" })
-    product: Product;
+    static validateItemsSale(itemsSale: ItemSale[], idSale?:number): any {
+        let itemsList = {
+            items: [],
+            errors: []
+        }
+        itemsSale.forEach((element: ItemSale) => {
+            let item: ItemSale = new ItemSale();
+            if (element.product) {
+                item.product = element.product;
+            } else {
+                item.productId = element.productId;
+            }
+            item.price = element.price;
+            item.quantity = element.quantity;
+            //TODO: Comprobar que al poner cero no da un error
+            item.saleId = idSale || 0;
+            //TODO: Crear un error si el stock es menor que la cantidad comprada
+            const error = validateSync(item);
+            if (error.length > 0) {
+                itemsList.errors.push(error);
+            } else {
+                itemsList.items.push(item);
+            }
+        });
+        return itemsList;
+    }
 
-    
 }

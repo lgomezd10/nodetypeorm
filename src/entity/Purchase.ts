@@ -2,9 +2,10 @@ import {Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Unique, OneToO
 import { MinLength, IsNotEmpty, IsEmail, Min } from "class-validator";
 import { User } from "./User";
 import { Product } from "./Product";
+import { Supplier } from "./Supplier";
 
 @Entity()
-export class Purchases {
+export class Purchase {
 
     @PrimaryGeneratedColumn()
     id: number;
@@ -35,5 +36,12 @@ export class Purchases {
     @ManyToOne( type => User, user => user.purchases)
     @JoinColumn({name: "userId"})
     user: User;
+
+    @Column("int")
+    supplierId: number;
+
+    @ManyToOne( type => Supplier, supplier => supplier.purchases)
+    @JoinColumn({name: "supplierId"})
+    supplier: number;
 
 }

@@ -1,8 +1,8 @@
 import {Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany, Unique} from "typeorm";
 import { MinLength, IsNotEmpty, IsEmail } from "class-validator";
 import { Product } from "./Product";
-import { Sales } from "./Sales";
-import { Purchases } from "./Purchases";
+import { Sale } from "./Sale";
+import { Purchase } from "./Purchase";
 
 @Entity()
 @Unique(['username'])
@@ -31,12 +31,12 @@ export class User {
     createAt: Date;
 
     @OneToMany(type => Product, product => product.user)
-    product: Product[];
+    products: Product[];
 
-    @OneToMany(type => Sales, sales => sales.user)
-    sales: Sales[];
+    @OneToMany(type => Sale, sales => sales.user)
+    sales: Sale[];
 
-    @OneToMany(type => Purchases, purchases => purchases.user)
-    purchases: Purchases[];
+    @OneToMany(type => Purchase, purchases => purchases.user)
+    purchases: Purchase[];
 
 }

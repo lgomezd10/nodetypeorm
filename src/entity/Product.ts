@@ -1,9 +1,9 @@
 import {Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Unique, OneToOne, JoinColumn, ManyToOne, OneToMany} from "typeorm";
 import { MinLength, IsNotEmpty, IsEmail, Min } from "class-validator";
 import { User } from "./User";
-import { Purchases } from "./Purchases";
-import { Sales } from "./Sales";
+import { Purchase } from "./Purchase";
 import { Sale } from "./Sale";
+import { ItemSale } from "./ItemSale";
 
 @Entity()
 @Unique(['name', 'userId'])
@@ -31,14 +31,14 @@ export class Product {
     @Column("int")
     userId: number;
 
-    @ManyToOne( type => User, user => user.product)
+    @ManyToOne( type => User, user => user.products)
     @JoinColumn({ name: "userId" })
     user: User;
 
-    @OneToMany(type => Purchases, purchases => purchases.product)
-    purchases: Purchases[];
+    @OneToMany(type => Purchase, purchase => purchase.product)
+    purchases: Purchase[];
 
-    @OneToMany(type => Sale, sale => sale.product)
-    sale: Sale[];
+    @OneToMany(type => ItemSale, itemSale => itemSale.product)
+    itemsSale: ItemSale[];
 
 }

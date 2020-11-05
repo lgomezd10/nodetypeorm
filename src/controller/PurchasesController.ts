@@ -2,20 +2,21 @@ import { validate, validateSync } from "class-validator";
 import { Request, Response } from "express";
 import { Between, getRepository } from "typeorm";
 import { Product } from "../entity/Product";
-import { Purchases } from "../entity/Purchases";
+import { Purchase } from "../entity/Purchase";
 
 class PurchasesController {
     static postPurchasesList = async (req: Request, res: Response) => {
 
-        const purchaseRepository = getRepository(Purchases);
+        const purchaseRepository = getRepository(Purchase);
         let reqPurchases = req.body;
         const {userId} = res.locals.jwtPayload;
         let errors = [];
 
-        let purchases: Purchases[] = [];
+        let purchases: Purchase[] = [];
 
         reqPurchases.forEach(reqPurchase => {
-            const purchase: Purchases = new Purchases();
+            const purchase: Purchase = new Purchase();
+            //TODO pensar si poner req.Purchase.product? y añadir req.productId?
             purchase.product = reqPurchase.product;
             purchase.price = reqPurchase.price;
             purchase.quantity = reqPurchase.quantity;
@@ -33,14 +34,14 @@ class PurchasesController {
         try {
             await purchaseRepository.save(purchases);
             res.json({ message: 'Saved purchases' });
-        } catch (e) {
-            res.status(400).json({ message: 'Error saving purchases', error: e });
+        } catch (error) {
+            res.status(400).json({ message: 'Error saving purchases', error });
         }     
 
     }
 
     static postDatePurchase = async (req: Request, res: Response) => {
-        const purchaseRepository = getRepository(Purchases);
+        const purchaseRepository = getRepository(Purchase);
         const {from, to} = req.body;
         const { userId } = res.locals.jwtPayload;
         let purchases;
