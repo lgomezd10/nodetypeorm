@@ -1,3 +1,4 @@
+import { IsNotEmpty, MinLength } from "class-validator";
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Purchase } from "./Purchase";
 import { User } from "./User";
@@ -9,13 +10,15 @@ export class Supplier {
     id: number;
 
     @Column()
+    @IsNotEmpty()
+    @MinLength(4)
     name: string;
 
     @Column()
     address: string;
 
     @Column()
-    phone: number;
+    phone: string;
 
     @Column()
     web: string;
@@ -23,7 +26,7 @@ export class Supplier {
     @Column("int")
     userId: number;
 
-    @ManyToOne( type => User, user => user.purchases)
+    @ManyToOne( type => User, user => user.suppliers)
     @JoinColumn({name: "userId"})
     user: User;
 

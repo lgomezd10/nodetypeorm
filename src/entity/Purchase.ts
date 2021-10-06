@@ -10,7 +10,7 @@ export class Purchase {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column("int", { nullable: true })
+    @Column("int", { nullable: false })
     productId: number;
 
     @ManyToOne( type => Product, product => product.purchases)
@@ -18,12 +18,13 @@ export class Purchase {
     product: Product;
 
     @Column({type: "float", unsigned: true})
-    @Min(0.01, {each: true})
+    @IsNotEmpty()
+    @Min(0.01)
     quantity: number;
 
     @Column({type: "float", unsigned: true})    
-    @IsNotEmpty({each: true})
-    @Min(0.01, {each: true})
+    @IsNotEmpty()
+    @Min(0.01)
     price: number;
 
     @Column()
@@ -37,11 +38,11 @@ export class Purchase {
     @JoinColumn({name: "userId"})
     user: User;
 
-    @Column("int")
+    @Column("int", { nullable: true })
     supplierId: number;
 
     @ManyToOne( type => Supplier, supplier => supplier.purchases)
     @JoinColumn({name: "supplierId"})
-    supplier: number;
+    supplier: Supplier;
 
 }

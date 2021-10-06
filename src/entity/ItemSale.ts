@@ -1,5 +1,5 @@
 import {Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Unique, OneToOne, JoinColumn, ManyToOne} from "typeorm";
-import { MinLength, IsNotEmpty, IsEmail, Min } from "class-validator";
+import { MinLength, IsNotEmpty, IsEmail, Min, ValidateNested } from "class-validator";
 import { User } from "./User";
 import { Product } from "./Product";
 import { Sale } from "./Sale";
@@ -35,9 +35,7 @@ export class ItemSale {
     equal(item: ItemSale): boolean {
 
        let  productIdItem = item.productId || item.product.id;
-       console.log("PRODUCTITEM", productIdItem)
-       let productId = this.productId || this.product.id
-       console.log("PRODUCT", productId)
+       let productId = this.productId || this.product.id;
 
         return  (productId == productIdItem) && (this.price == item.price) && (this.quantity == item.quantity);
         

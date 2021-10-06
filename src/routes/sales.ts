@@ -8,7 +8,7 @@ const router = Router();
 router.get('/sale/:id', [checkJwt], SalesController.getSale);
 
 // Save sales
-router.post('/', [checkJwt], SalesController.postSale);
+router.post('/', [checkJwt], SalesController.postNewSale);
 
 // Update sales
 router.post('/update/:id', [checkJwt], SalesController.postUpdateSale);

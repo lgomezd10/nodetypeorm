@@ -13,7 +13,7 @@ export class UserController {
             users = await userRepository.find();
             res.send(users);
         } catch (error) {
-            res.status(404).json({message: 'Something goes wrong to find Users'});
+            return res.status(404).json({message: 'Something goes wrong to find Users'});
         }
     }
 
@@ -26,7 +26,7 @@ export class UserController {
             user = await userRepository.findOneOrFail(id);
             res.send(user);
         } catch (error) {
-            res.status(404).json({message: 'User not found'});
+            return res.status(404).json({message: 'User not found'});
         }
     }
 
@@ -51,7 +51,7 @@ export class UserController {
         try {
             await userRepository.save(user);
         } catch (error) {
-            res.status(409).json({ message: 'Username already exist' });
+            return res.status(409).json({ message: 'Username already exist' });
         }
 
         res.json('User created')

@@ -48,16 +48,24 @@ createConnection().then(async () => {
     let server = app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
     let io = require('socket.io').listen(server);
 
+    // export io to use:
+    //const socket = require('../index');
+    //socket.emit('updateProducts', products);
     module.exports = io;
     
     io.on('connection', function (socket) {
         // Cada vez que se conecta un cliente mostramos un mensaje en la consola de Node.
-        console.log('++++ Nuevo cliente conectado ++++');
+        console.log('++++ Nuevo cliente conectado ++++');  
+        
+        socket.emit('connected', true);
+        
         socket.on('disconnect', function () {
             console.log('user disconnected');
         });
 
     });
+
+    //io.emit('connected', true);
 
 })
     .catch(error => console.log(error));

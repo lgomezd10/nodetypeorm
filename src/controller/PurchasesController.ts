@@ -17,25 +17,27 @@ class PurchasesController {
         reqPurchases.forEach(reqPurchase => {
             const purchase: Purchase = new Purchase();
             //TODO pensar si poner req.Purchase.product? y añadir req.productId?
-            purchase.product = reqPurchase.product;
+            purchase.productId = reqPurchase.productId || reqPurchase.product?.id;
             purchase.price = reqPurchase.price;
             purchase.quantity = reqPurchase.quantity;
+            purchase.supplierId = reqPurchase.supplierId;
             purchase.userId = userId;
             const error = validateSync(purchase);
             if (error.length > 0) {
                 errors.push(error);
             }
             purchases.push(purchase);
+            
         });
         if (errors.length > 0) {
             return res.status(400).json({ message: 'Errors validating the purchases. Saved nothing', errors });
         }
 
         try {
-            await purchaseRepository.save(purchases);
-            res.json({ message: 'Saved purchases' });
+            let saved = await purchaseRepository.save(purchases);
+            res.send(saved);
         } catch (error) {
-            res.status(400).json({ message: 'Error saving purchases', error });
+            return res.status(400).json({ message: 'Error saving purchases', error });
         }     
 
     }
@@ -54,7 +56,7 @@ class PurchasesController {
             res.send(purchases);
         }
         catch(e) {
-            res.status(400).json({errors:e});
+            return res.status(400).json({errors:e});
         }
     }
 }

@@ -33,25 +33,34 @@ export class Sale {
             items: [],
             errors: []
         }
-        itemsSale.forEach((element: ItemSale) => {
-            let item: ItemSale = new ItemSale();
-            if (element.product) {
-                item.product = element.product;
-            } else {
-                item.productId = element.productId;
-            }
-            item.price = element.price;
-            item.quantity = element.quantity;
-            //TODO: Comprobar que al poner cero no da un error
-            item.saleId = idSale || 0;
-            //TODO: Crear un error si el stock es menor que la cantidad comprada
-            const error = validateSync(item);
-            if (error.length > 0) {
-                itemsList.errors.push(error);
-            } else {
-                itemsList.items.push(item);
-            }
-        });
+        const validateOptions = { validationError: { target: false, value: false } }
+
+        try {
+            itemsSale.forEach((element: ItemSale) => {
+                let item: ItemSale = new ItemSale();
+                if (element.product) {
+                    item.product = element.product;
+                } else {
+                    item.productId = element.productId;
+                }
+                item.price = element.price;
+                item.quantity = element.quantity;
+                //TODO: Comprobar que al poner cero no da un error
+                item.saleId = idSale || 0;
+                //TODO: Crear un error si el stock es menor que la cantidad comprada
+                const error = validateSync(item, validateOptions);
+                if (error.length > 0) {
+                    //itemsList.errors.push(error);
+                    throw(error);
+                } else {
+                    itemsList.items.push(item);
+                }
+            });
+            
+        } catch (error) {
+            itemsList.errors[0] = error;
+        }
+        
         return itemsList;
     }
 

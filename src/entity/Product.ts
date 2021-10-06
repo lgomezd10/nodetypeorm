@@ -25,7 +25,7 @@ export class Product {
     @Column()
     type: string;
 
-    @Column({default: 0})   
+    @Column({type: "float", unsigned: true, default: 0})   
     stock: number;
 
     @Column("int")

@@ -3,6 +3,8 @@ import { MinLength, IsNotEmpty, IsEmail } from "class-validator";
 import { Product } from "./Product";
 import { Sale } from "./Sale";
 import { Purchase } from "./Purchase";
+import SuppliersController from "../controller/SuppliersController";
+import { Supplier } from "./Supplier";
 
 @Entity()
 @Unique(['username'])
@@ -36,7 +38,10 @@ export class User {
     @OneToMany(type => Sale, sales => sales.user)
     sales: Sale[];
 
-    @OneToMany(type => Purchase, purchases => purchases.user)
+    @OneToMany(type => Purchase, purchase => purchase.user)
     purchases: Purchase[];
+
+    @OneToMany(type => Supplier, supplier => supplier.user)
+    suppliers: Supplier[];
 
 }

@@ -8,13 +8,12 @@ class ProductsController {
     static getAllProduct = async (req: Request, res: Response) => {
         let products: Product[];
         const productsRepository = getRepository(Product);
-        const {auth} = req.headers;
-        const { jwtPayload } = res.locals;
-        console.log("Desde GETALLPRODUCT el token", auth, "header", req.headers);
+        const { auth } = req.headers;
+        const { userId } = res.locals.jwtPayload;
         try {
-            products = await productsRepository.find({where: {userId: jwtPayload.userId}});
+            products = await productsRepository.find({ where: { userId } });
         } catch (error) {
-            res.status(406).json({ message: 'Something goes wrong!', error });
+            return res.status(406).json({ message: 'Something goes wrong!', error });
         }
 
         res.send(products);
@@ -22,70 +21,76 @@ class ProductsController {
     static getOneProduct = async (req: Request, res: Response) => {
         const { id } = req.params;
         const productsRepository = getRepository(Product);
-        const { jwtPayload } = res.locals;  
+        const { userId } = res.locals.jwtPayload;
+        let product: Product;
 
         try {
-            const product = await productsRepository.findOneOrFail(id);
-            if (product.userId != jwtPayload.userId) {
-                return res.status(404).json({message: 'product not found'})
-             }
-            res.send(product);
+            product = await productsRepository.findOneOrFail(id);
+
         } catch (error) {
-            res.status(404).json({ message: 'Product not found', error });
+            return res.status(404).json({ message: 'Product not found', error });
         }
 
+        if (product.userId != userId) {
+            return res.status(404).json({ message: 'product not found' })
+        }
+        res.send(product);
+
     }
-    static postNewProduct = async (req: Request, res: Response) => { 
+
+
+    
+    static postNewProduct = async (req: Request, res: Response) => {
         const productsRepository = getRepository(Product);
         const { name, price, type } = req.body;
-        const { jwtPayload } = res.locals;
-        let product: Product = new Product();       
-
+        const { userId } = res.locals.jwtPayload;
+        let product: Product = new Product();
 
         product.name = name;
         product.price = price;
         product.type = type;
-        product.userId = jwtPayload.userId;
+        product.userId = userId;
 
-        
+
         const errors = await validate(product);
-        if(errors.length > 0) {
-            return res.status(400).json({message: 'Error to validate product', errors});
-        }    
-
-        try {
-            await productsRepository.save(product);            
-            
-            res.json({message: 'product saved'});           
-            
-        } catch (error) {
-            res.status(400).json({message: 'product already exists', error});
+        if (errors.length > 0) {
+            return res.status(400).json({ message: 'Error to validate product', errors });
         }
 
-        let products = await productsRepository.find({where: {userId: jwtPayload.userId}});
-        const socket =require('../index');
+        try {
+            let saved = await productsRepository.save(product);
+            res.send(saved);
+
+        } catch (error) {
+            return res.status(400).json({ message: 'product already exists', error });
+        }
+
+        let products = await productsRepository.find({ where: { userId} });
+        const socket = require('../index');
         socket.emit('updateProducts', products);
 
-       
     }
-    static postUpdateProduct = async (req: Request, res: Response) => { 
+
+    static postUpdateProduct = async (req: Request, res: Response) => {
         let product: Product
         const productsRepository = getRepository(Product);
         const { id } = req.params;
         const { name, price, type } = req.body;
-        const { jwtPayload } = res.locals;        
+        const { userId } = res.locals.jwtPayload;
 
         try {
             product = await productsRepository.findOneOrFail(id);
-            if (product.userId != jwtPayload.userId) {
-               return res.status(404).json({message: 'product not found'})
-            }
-            product.name = name;
-            product.price = price;
-            product.type = type;
+
         } catch (error) {
-            res.status(404).json({message:'Product not found'});
+            return res.status(404).json({ message: 'Product not found' });
         }
+
+        if (product.userId != userId) {
+            return res.status(404).json({ message: 'product not found' })
+        }
+        product.name = name || product.name;
+        product.price = price || product.price;
+        product.type = type || product.type;
 
         const errors = await validate(product);
         if (errors.length > 0) {
@@ -96,33 +101,33 @@ class ProductsController {
             await productsRepository.save(product);
             res.send(product);
         } catch (error) {
-            res.status(409).json({error});
+            return res.status(409).json({ error });
         }
 
-        let products = await productsRepository.find({where: {userId: jwtPayload.userId}});
-        const socket =require('../index');
+        let products = await productsRepository.find({ where: { userId } });
+        const socket = require('../index');
         socket.emit('updateProducts', products);
 
 
     }
 
-    static deleteProduct = async (req: Request, res: Response) => { 
+    static deleteProduct = async (req: Request, res: Response) => {
         const { id } = req.params;
         let product: Product;
         const productsRepository = getRepository(Product);
-        const { jwtPayload } = res.locals;  
+        const { jwtPayload } = res.locals;
 
         try {
             product = await productsRepository.findOneOrFail(id);
             if (product.userId != jwtPayload.userId) {
-                return res.status(404).json({message: 'product not found'})
-             }
+                return res.status(404).json({ message: 'product not found' })
+            }
         } catch (error) {
-            res.status(404).json({ message: 'Product not found', error });
+            return res.status(404).json({ message: 'Product not found', error });
         }
 
         productsRepository.delete(id);
-        res.json({message: 'Product deleted'})
+        res.json({ message: 'Product deleted' })
 
     }
 
