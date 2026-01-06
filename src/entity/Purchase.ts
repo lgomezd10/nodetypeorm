@@ -1,6 +1,6 @@
 import {Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Unique, OneToOne, JoinColumn, ManyToOne} from "typeorm";
 import { MinLength, IsNotEmpty, IsEmail, Min } from "class-validator";
-import { User } from "./User";
+import { CompanyUser } from "./CompanyUser";
 import { Product } from "./Product";
 import { Supplier } from "./Supplier";
 
@@ -28,15 +28,15 @@ export class Purchase {
     price: number;
 
     @Column()
-    @CreateDateColumn({type: "datetime"})
+    @CreateDateColumn({type: "timestamp"})
     date: Date;
 
     @Column("int")
     userId: number;
 
-    @ManyToOne( type => User, user => user.purchases)
+    @ManyToOne( type => CompanyUser, user => user.purchases)
     @JoinColumn({name: "userId"})
-    user: User;
+    user: CompanyUser;
 
     @Column("int", { nullable: true })
     supplierId: number;

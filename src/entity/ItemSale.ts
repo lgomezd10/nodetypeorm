@@ -1,6 +1,6 @@
 import {Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Unique, OneToOne, JoinColumn, ManyToOne} from "typeorm";
 import { MinLength, IsNotEmpty, IsEmail, Min, ValidateNested } from "class-validator";
-import { User } from "./User";
+import { CompanyUser } from "./CompanyUser";
 import { Product } from "./Product";
 import { Sale } from "./Sale";
 

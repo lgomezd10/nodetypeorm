@@ -1,13 +1,13 @@
 import { validate } from "class-validator";
 import { Request, Response } from "express";
-import { getRepository } from "typeorm";
+import { AppDataSource } from "../data-source";
 import { Product } from "../entity/Product";
 
 
 class ProductsController {
     static getAllProduct = async (req: Request, res: Response) => {
         let products: Product[];
-        const productsRepository = getRepository(Product);
+        const productsRepository = AppDataSource.getRepository(Product);
         const { auth } = req.headers;
         const { userId } = res.locals.jwtPayload;
         try {
@@ -20,12 +20,12 @@ class ProductsController {
     }
     static getOneProduct = async (req: Request, res: Response) => {
         const { id } = req.params;
-        const productsRepository = getRepository(Product);
+        const productsRepository = AppDataSource.getRepository(Product);
         const { userId } = res.locals.jwtPayload;
         let product: Product;
 
         try {
-            product = await productsRepository.findOneOrFail(id);
+            product = await productsRepository.findOneOrFail({ where: { id: Number(id) } });
 
         } catch (error) {
             return res.status(404).json({ message: 'Product not found', error });
@@ -41,7 +41,7 @@ class ProductsController {
 
     
     static postNewProduct = async (req: Request, res: Response) => {
-        const productsRepository = getRepository(Product);
+        const productsRepository = AppDataSource.getRepository(Product);
         const { name, price, type } = req.body;
         const { userId } = res.locals.jwtPayload;
         let product: Product = new Product();
@@ -73,13 +73,13 @@ class ProductsController {
 
     static postUpdateProduct = async (req: Request, res: Response) => {
         let product: Product
-        const productsRepository = getRepository(Product);
+        const productsRepository = AppDataSource.getRepository(Product);
         const { id } = req.params;
         const { name, price, type } = req.body;
         const { userId } = res.locals.jwtPayload;
 
         try {
-            product = await productsRepository.findOneOrFail(id);
+            product = await productsRepository.findOneOrFail({ where: { id: Number(id) } });
 
         } catch (error) {
             return res.status(404).json({ message: 'Product not found' });
@@ -114,11 +114,11 @@ class ProductsController {
     static deleteProduct = async (req: Request, res: Response) => {
         const { id } = req.params;
         let product: Product;
-        const productsRepository = getRepository(Product);
+        const productsRepository = AppDataSource.getRepository(Product);
         const { jwtPayload } = res.locals;
 
         try {
-            product = await productsRepository.findOneOrFail(id);
+            product = await productsRepository.findOneOrFail({ where: { id: Number(id) } });
             if (product.userId != jwtPayload.userId) {
                 return res.status(404).json({ message: 'product not found' })
             }

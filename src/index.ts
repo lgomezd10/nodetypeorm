@@ -1,9 +1,9 @@
 import "reflect-metadata";
-import { createConnection } from "typeorm";
+import { AppDataSource } from "./data-source";
 import * as express from "express";
 import { Request, Response } from "express";
 import * as cors from 'cors';
-import * as helmet from 'helmet';
+import helmet from 'helmet';
 import routes from "./routes";
 import * as socketIO from 'socket.io';
 
@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 3000;
 
 
 
-createConnection().then(async () => {
+AppDataSource.initialize().then(async () => {
 
     // create express app
     const app = express();
@@ -46,7 +46,15 @@ createConnection().then(async () => {
 
     // start express server
     let server = app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-    let io = require('socket.io').listen(server);
+    
+    // create socket.io server (modern API)
+        const io = new socketIO.Server(server, {
+            // opcional: configurar CORS si hace falta
+            cors: {
+                origin: "http://localhost:4200",
+                methods: ["GET", "POST"]
+            }
+        });
 
     // export io to use:
     //const socket = require('../index');

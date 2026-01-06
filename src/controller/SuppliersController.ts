@@ -1,13 +1,13 @@
 import { validate } from "class-validator";
-import { Request, Response } from "express"
-import { getRepository } from "typeorm"
+import { Request, Response } from "express";
+import { AppDataSource } from "../data-source";
 import { Supplier } from "../entity/Supplier"
 
 class SuppliersController {
 
 
     static getAll = async (req: Request, res: Response) => {
-        const suppliersRepository = getRepository(Supplier);
+        const suppliersRepository = AppDataSource.getRepository(Supplier);
         const { userId } = res.locals.jwtPayload;
         let suppliers: Supplier[];
 
@@ -21,13 +21,13 @@ class SuppliersController {
     }
 
     static getOneSupplier = async (req: Request, res: Response) => {
-        const suppliersRepository = getRepository(Supplier);
+        const suppliersRepository = AppDataSource.getRepository(Supplier);
         const { id } = req.params;
         const { userId } = res.locals.jwtPayload;
         let supplier: Supplier;
 
         try {
-            supplier = await suppliersRepository.findOneOrFail(id);
+            supplier = await suppliersRepository.findOneOrFail({ where: { id: Number(id) } });
         } catch (error) {
             return res.json({ message: 'Supplier not found', error });
         }
@@ -41,7 +41,7 @@ class SuppliersController {
     }
 
     static postNewSupplier = async (req: Request, res: Response) => {
-        const suppliersRepository = getRepository(Supplier);
+        const suppliersRepository = AppDataSource.getRepository(Supplier);
         const { name, address, phone, web} = req.body;
         let supplier = new Supplier();
         supplier.name = name;
@@ -65,14 +65,14 @@ class SuppliersController {
     }
 
     static postUpdateSupplier = async (req: Request, res: Response) => { 
-        const suppliersRepository = getRepository(Supplier);
+        const suppliersRepository = AppDataSource.getRepository(Supplier);
         const { name, address, phone, web} = req.body;
         const { id } = req.params;
         const { userId } = res.locals.jwtPayload;
         let supplier: Supplier;
 
         try {
-            supplier = await suppliersRepository.findOneOrFail(id);
+            supplier = await suppliersRepository.findOneOrFail({ where: { id: Number(id) } });
         } catch (error) {
             return res.status(404).json({message: 'Supplier not found', error});
         }

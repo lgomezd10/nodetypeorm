@@ -1,7 +1,7 @@
 import { IsNotEmpty, MinLength } from "class-validator";
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Purchase } from "./Purchase";
-import { User } from "./User";
+import { CompanyUser } from "./CompanyUser";
 
 @Entity()
 export class Supplier {
@@ -26,9 +26,9 @@ export class Supplier {
     @Column("int")
     userId: number;
 
-    @ManyToOne( type => User, user => user.suppliers)
+    @ManyToOne( type => CompanyUser, user => user.suppliers)
     @JoinColumn({name: "userId"})
-    user: User;
+    user: CompanyUser;
 
     @OneToMany( type => Purchase, purchase => purchase.supplier)
     purchases: Purchase[];

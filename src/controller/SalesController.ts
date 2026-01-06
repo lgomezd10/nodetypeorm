@@ -1,6 +1,7 @@
 import { validateSync } from "class-validator";
 import { json, Request, Response } from "express";
-import { Between, getRepository } from "typeorm";
+import { Between } from "typeorm";
+import { AppDataSource } from "../data-source";
 import { Product } from "../entity/Product";
 import { ItemSale } from "../entity/ItemSale";
 import { Sale } from "../entity/Sale";
@@ -8,8 +9,8 @@ import { Sale } from "../entity/Sale";
 class SalesController {
 
     static postNewSale = async (req: Request, res: Response) => {
-        const salesRepository = getRepository(Sale);
-        const itemsRepository = getRepository(ItemSale);
+        const salesRepository = AppDataSource.getRepository(Sale);
+        const itemsRepository = AppDataSource.getRepository(ItemSale);
         let sale = new Sale();
         let saved: Sale;
         let items = req.body.itemsSale;
@@ -41,7 +42,7 @@ class SalesController {
             res.json({ message: 'saved sales', saleId: saved.id })
 
         } catch (error) {
-            await salesRepository.delete(saved);
+            await salesRepository.remove(saved);
             return res.status(400).json({ message: 'Errors saving sales. Deleted sale', errors: error });
         }
 
@@ -49,8 +50,8 @@ class SalesController {
 
 
     static postUpdateSale = async (req: Request, res: Response) => {
-        const salesRepository = getRepository(Sale);
-        const itemsRepository = getRepository(ItemSale);
+        const salesRepository = AppDataSource.getRepository(Sale);
+        const itemsRepository = AppDataSource.getRepository(ItemSale);
         let errors = [];
         const { creditCard } = req.body;
         let saleId: number = +req.params.id;
@@ -76,7 +77,7 @@ class SalesController {
         
         if (!items || items.length == 0) {
             try {
-                toDrop = await itemsRepository.find({ where: { sale: sale } });
+                toDrop = await itemsRepository.find({ where: { sale: { id: sale.id } } });
                 dropSale = true;
             } catch (error) {
                 return res.status(400).json({ message: 'error to find saved items', error });
@@ -91,7 +92,7 @@ class SalesController {
 
             // Add only items is not in BBDD and remove if not in list
             toSave = outcome.items;
-            let itemsSaved = await itemsRepository.find({ where: { sale: sale } });
+            let itemsSaved = await itemsRepository.find({ where: { sale: { id: sale.id } } });
             if (toSave.length == 0) {
                 toDrop = itemsSaved;
             } else {
@@ -135,20 +136,21 @@ class SalesController {
     }
 
     static getSale = async (req: Request, res: Response) => {
-        const salesRepository = getRepository(Sale);
-        const itemsRepository = getRepository(ItemSale);
+        const salesRepository = AppDataSource.getRepository(Sale);
+        const itemsRepository = AppDataSource.getRepository(ItemSale);
         const { id } = req.params;
         const userId = res.locals.jwtPayload.userId;
         let sale: Sale;
 
         try {
-            sale = await salesRepository.findOneOrFail({ where: { id, userId } });
+            sale = await salesRepository.findOneOrFail({ where: { id: Number(id), userId } });
         } catch (error) {
             return res.status(404).json({ message: 'Sale not found' });
         }
 
         try {
-            sale.itemsSale = await itemsRepository.find({ relations: ["product"], where: { sale: sale } });
+            let test = await itemsRepository.find({ relations: ["product"], where: { sale: { id: sale.id } } });
+            sale.itemsSale = test;
             res.send(sale);
         } catch (error) {
             return res.status(404).json({ message: 'Sales not found' });
@@ -158,10 +160,13 @@ class SalesController {
     }
 
     static postSalesByDate = async (req: Request, res: Response) => {
-        const salesRepository = getRepository(Sale);
+        
+        const salesRepository = AppDataSource.getRepository(Sale);
         const { from, to } = req.body;
         const userId = res.locals.jwtPayload.userId;
         let sale;
+
+        console.log('postSalesByDate', from, to);
 
         if (!(req.body.from && req.body.to)) {
             return res.status(400).json({ message: 'from and to required' })
@@ -171,8 +176,10 @@ class SalesController {
 
             sale = await salesRepository.find({ relations: ["itemsSale"], where: { date: Between(from, to), userId } });
             res.send(sale);
+            console.log(sale);
         }
         catch (error) {
+            console.log(error);
             return res.status(400).json({ error });
         }
 
