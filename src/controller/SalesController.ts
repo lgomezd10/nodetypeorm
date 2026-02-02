@@ -149,8 +149,7 @@ class SalesController {
         }
 
         try {
-            let test = await itemsRepository.find({ relations: ["product"], where: { sale: { id: sale.id } } });
-            sale.itemsSale = test;
+            sale.itemsSale = await itemsRepository.find({ relations: ["product"], where: { sale: { id: sale.id } } });
             res.send(sale);
         } catch (error) {
             return res.status(404).json({ message: 'Sales not found' });
@@ -164,7 +163,7 @@ class SalesController {
         const salesRepository = AppDataSource.getRepository(Sale);
         const { from, to } = req.body;
         const userId = res.locals.jwtPayload.userId;
-        let sale;
+        let sale: Sale[];
 
         console.log('postSalesByDate', from, to);
 
@@ -175,8 +174,10 @@ class SalesController {
         try {
 
             sale = await salesRepository.find({ relations: ["itemsSale"], where: { date: Between(from, to), userId } });
+            if (!sale || sale.length == 0) {
+                return res.status(404).json({ message: 'No sales found' });
+            }
             res.send(sale);
-            console.log(sale);
         }
         catch (error) {
             console.log(error);

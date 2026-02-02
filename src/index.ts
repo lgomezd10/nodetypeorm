@@ -48,29 +48,39 @@ AppDataSource.initialize().then(async () => {
     let server = app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
     
     // create socket.io server (modern API)
-        const io = new socketIO.Server(server, {
-            // opcional: configurar CORS si hace falta
-            cors: {
-                origin: "http://localhost:4200",
-                methods: ["GET", "POST"]
-            }
-        });
+    const io = new socketIO.Server(server, {
+        cors: {
+            origin: "http://localhost:4200",
+            methods: ["GET", "POST"]
+        }
+    });
 
     // export io to use:
-    //const socket = require('../index');
-    //socket.emit('updateProducts', products);
     module.exports = io;
-    
+
+    // Usar verifyJwt del middleware para proteger la conexión
+    const { verifyJwt } = require('./middlewares/jwt');
+    io.use((socket, next) => {
+        // Obtener el token del handshake (auth, query, headers)
+        const token = socket.handshake.auth?.token || socket.handshake.query?.token || socket.handshake.headers?.auth;
+        let jwtPayload;
+        try {
+            jwtPayload = verifyJwt(token);
+            socket.data.jwtPayload = jwtPayload;
+            next();
+        } catch (e) {
+            console.log('JWT Error:', e.message);
+            next(new Error('Not Authorized'));
+        }
+    });
+
     io.on('connection', function (socket) {
         // Cada vez que se conecta un cliente mostramos un mensaje en la consola de Node.
         console.log('++++ Nuevo cliente conectado ++++');  
-        
         socket.emit('connected', true);
-        
         socket.on('disconnect', function () {
             console.log('user disconnected');
         });
-
     });
 
     //io.emit('connected', true);

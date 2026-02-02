@@ -23,7 +23,6 @@ export class SaleSubscriber implements EntitySubscriberInterface<ItemSale> {
      */
     
      async afterInsert(event: InsertEvent<ItemSale>) {
-        //console.log(`BEFORE POST INSERTED: `, event.entity);
         const productRepository = AppDataSource.getRepository(Product);
 
         try {
@@ -40,7 +39,6 @@ export class SaleSubscriber implements EntitySubscriberInterface<ItemSale> {
     }
 
     async afterRemove(event: RemoveEvent<ItemSale>) {
-        //console.log(`BEFORE POST INSERTED: `, event.entity);
         const productRepository = AppDataSource.getRepository(Product);
 
         try {

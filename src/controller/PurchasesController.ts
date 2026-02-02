@@ -54,6 +54,9 @@ class PurchasesController {
 
         try{
             purchases = await purchaseRepository.find({relations: ["product"],where:{ userId, date: Between(from, to)}});
+            if (purchases.length == 0) {
+                return  res.status(404).json({message: 'No purchases found'});
+            }
             res.send(purchases);
         }
         catch(e) {

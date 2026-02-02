@@ -2,6 +2,13 @@ import { Request, Response, NextFunction } from 'express';
 import * as jwt from 'jsonwebtoken';
 import config from '../config/config';
 
+export function verifyJwt(token: string): any {
+  try {
+    return jwt.verify(token, config.jwtSecret);
+  } catch (e) {
+    throw e;
+  }
+}
 
 export const checkJwt = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers['authorization'];
@@ -10,7 +17,7 @@ export const checkJwt = (req: Request, res: Response, next: NextFunction) => {
   let jwtPayload;
 
   try {
-    jwtPayload = <any>jwt.verify(token, config.jwtSecret);
+    jwtPayload = verifyJwt(token);
     res.locals.jwtPayload = jwtPayload;
   } catch (e) {
     console.log('JWT Error:', e);
