@@ -8,7 +8,7 @@ import { Supplier } from "./Supplier";
 
 @Entity()
 @Unique(['username'])
-export class User {
+export class CompanyUser {
 
     @PrimaryGeneratedColumn()
     id: number;

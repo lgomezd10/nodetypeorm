@@ -1,12 +1,12 @@
-import {getRepository} from "typeorm";
+import { AppDataSource } from "../data-source";
 import {NextFunction, Request, Response} from "express";
-import {User} from "../entity/User";
+import {CompanyUser} from "../entity/CompanyUser";
 import { validate } from "class-validator";
 
 export class UserController {
 
     static getAll = async (req: Request, res: Response) => { 
-        const userRepository = getRepository(User);
+        const userRepository = AppDataSource.getRepository(CompanyUser);
         let users;
 
         try {
@@ -18,12 +18,12 @@ export class UserController {
     }
 
     static getById = async (req: Request, res: Response) => { 
-        const userRepository = getRepository(User);
+        const userRepository = AppDataSource.getRepository(CompanyUser);
         const { id } = req.params;
         let user;
 
         try {
-            user = await userRepository.findOneOrFail(id);
+            user = await userRepository.findOneOrFail({ where: { id: Number(id) } });
             res.send(user);
         } catch (error) {
             return res.status(404).json({message: 'User not found'});
@@ -31,8 +31,8 @@ export class UserController {
     }
 
     static new = async (req: Request, res: Response) => { 
-        const userRepository = getRepository(User);
-        let user = new User();
+        const userRepository = AppDataSource.getRepository(CompanyUser);
+        let user = new CompanyUser();
         const { username, password, role } = req.body;
 
         if (!username || !password) {
@@ -59,13 +59,13 @@ export class UserController {
     }
 
     static edit = async (req: Request, res: Response) => { 
-        const userRepository = getRepository(User);
+        const userRepository = AppDataSource.getRepository(CompanyUser);
         const { id } = req.params;
         const { username, role } = req.body;
         let user
 
         try {
-            user = await userRepository.findOneOrFail(id);
+            user = await userRepository.findOneOrFail({ where: { id: Number(id) } });
             user.username = username? username: user.username;
             user.role = role ? role: user.role;
           } catch (e) {
@@ -90,11 +90,11 @@ export class UserController {
 
     static delete = async (req: Request, res: Response) => { 
         const { id } = req.params;
-        const userRepository = getRepository(User);
-        let user: User;
+        const userRepository = AppDataSource.getRepository(CompanyUser);
+        let user: CompanyUser;
 
         try {
-        user = await userRepository.findOneOrFail(id);
+        user = await userRepository.findOneOrFail({ where: { id: Number(id) } });
         } catch (e) {
         return res.status(404).json({ message: 'User not found' });
         }

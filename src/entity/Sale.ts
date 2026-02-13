@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Unique, OneToOne, JoinColumn, ManyToOne, OneToMany, UpdateDateColumn } from "typeorm";
 import { MinLength, IsNotEmpty, IsEmail, Min, validateSync } from "class-validator";
-import { User } from "./User";
+import { CompanyUser } from "./CompanyUser";
 import { ItemSale } from "./ItemSale";
 
 @Entity()
@@ -21,9 +21,9 @@ export class Sale {
     @Column("int")
     userId: number;
 
-    @ManyToOne( type => User, user => user.purchases)
+    @ManyToOne( type => CompanyUser, user => user.purchases)
     @JoinColumn({name: "userId"})
-    user: User;
+    user: CompanyUser;
 
     @OneToMany(type => ItemSale, itemSale => itemSale.sale)
     itemsSale: ItemSale[];

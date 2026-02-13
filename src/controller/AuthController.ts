@@ -1,14 +1,14 @@
 import { Request, Response } from "express";
-import { getRepository } from "typeorm";
+import { AppDataSource } from "../data-source";
 import * as jwt from 'jsonwebtoken';
-import { User } from "../entity/User";
+import { CompanyUser } from "../entity/CompanyUser";
 import config from "../config/config";
 
 export class AuthController {
     static login = async (req: Request, res: Response) => {
-        const userRespository = getRepository(User);
+        const userRespository = AppDataSource.getRepository(CompanyUser);
         const { username, password} = req.body;
-        let user: User;
+        let user: CompanyUser;
         if (!username || !password) {
             return res.status(400).json({ message: ' Username & Password are required!' });
         }

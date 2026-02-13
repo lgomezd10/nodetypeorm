@@ -1,13 +1,14 @@
 import { validate, validateSync } from "class-validator";
 import { Request, Response } from "express";
-import { Between, getRepository } from "typeorm";
+import { Between } from "typeorm";
+import { AppDataSource } from "../data-source";
 import { Product } from "../entity/Product";
 import { Purchase } from "../entity/Purchase";
 
 class PurchasesController {
     static postPurchasesList = async (req: Request, res: Response) => {
 
-        const purchaseRepository = getRepository(Purchase);
+        const purchaseRepository = AppDataSource.getRepository(Purchase);
         let reqPurchases = req.body;
         const {userId} = res.locals.jwtPayload;
         let errors = [];
@@ -43,7 +44,7 @@ class PurchasesController {
     }
 
     static postDatePurchase = async (req: Request, res: Response) => {
-        const purchaseRepository = getRepository(Purchase);
+        const purchaseRepository = AppDataSource.getRepository(Purchase);
         const {from, to} = req.body;
         const { userId } = res.locals.jwtPayload;
         let purchases;
@@ -53,6 +54,9 @@ class PurchasesController {
 
         try{
             purchases = await purchaseRepository.find({relations: ["product"],where:{ userId, date: Between(from, to)}});
+            if (purchases.length == 0) {
+                return  res.status(404).json({message: 'No purchases found'});
+            }
             res.send(purchases);
         }
         catch(e) {

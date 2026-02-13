@@ -1,5 +1,6 @@
 
-import { getRepository, RemoveEvent } from "typeorm";
+import { RemoveEvent } from "typeorm";
+import { AppDataSource } from "../data-source";
 import { EventSubscriber } from "typeorm/decorator/listeners/EventSubscriber";
 import { EntitySubscriberInterface } from "typeorm/subscriber/EntitySubscriberInterface";
 import { InsertEvent } from "typeorm/subscriber/event/InsertEvent";
@@ -22,8 +23,7 @@ export class SaleSubscriber implements EntitySubscriberInterface<ItemSale> {
      */
     
      async afterInsert(event: InsertEvent<ItemSale>) {
-        //console.log(`BEFORE POST INSERTED: `, event.entity);
-        const productRepository = getRepository(Product);
+        const productRepository = AppDataSource.getRepository(Product);
 
         try {
             let product = await productRepository.findOneOrFail({where: { id: event.entity.product.id}});
@@ -39,11 +39,10 @@ export class SaleSubscriber implements EntitySubscriberInterface<ItemSale> {
     }
 
     async afterRemove(event: RemoveEvent<ItemSale>) {
-        //console.log(`BEFORE POST INSERTED: `, event.entity);
-        const productRepository = getRepository(Product);
+        const productRepository = AppDataSource.getRepository(Product);
 
         try {
-            let product = await productRepository.findOneOrFail(event.entity.productId);
+            let product = await productRepository.findOneOrFail({ where: { id: Number(event.entity.productId) } });
                      
             product.stock = product.stock + event.entity.quantity;
             productRepository.save(product);

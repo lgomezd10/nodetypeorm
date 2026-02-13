@@ -1,4 +1,5 @@
-import { getRepository, RemoveEvent } from "typeorm";
+import { RemoveEvent } from "typeorm";
+import { AppDataSource } from "../data-source";
 import { EventSubscriber } from "typeorm/decorator/listeners/EventSubscriber";
 import { EntitySubscriberInterface } from "typeorm/subscriber/EntitySubscriberInterface";
 import { InsertEvent } from "typeorm/subscriber/event/InsertEvent";
@@ -22,19 +23,16 @@ export class PurchasesSubscriber implements EntitySubscriberInterface<Purchase> 
      */
     
      async afterInsert(event: InsertEvent<Purchase>) {
-        const productRepository = getRepository(Product);
+        const productRepository = AppDataSource.getRepository(Product);
         const productId = event.entity.productId || event.entity.product?.id;
 
         try {
-            let product = await productRepository.findOneOrFail(productId);
+            let product = await productRepository.findOneOrFail({ where: { id: Number(productId) } });
              product.stock = product.stock + event.entity.quantity;
             productRepository.save(product);
         } catch (error) {
-            console.log("Tras error al actualizar un insert de el evento", event);
             console.log("Error al actualizar el stock", error);
-        }
-        
+        }        
     }
-
     
 }

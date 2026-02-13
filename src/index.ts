@@ -1,9 +1,9 @@
 import "reflect-metadata";
-import { createConnection } from "typeorm";
+import { AppDataSource } from "./data-source";
 import * as express from "express";
 import { Request, Response } from "express";
 import * as cors from 'cors';
-import * as helmet from 'helmet';
+import helmet from 'helmet';
 import routes from "./routes";
 import * as socketIO from 'socket.io';
 
@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 3000;
 
 
 
-createConnection().then(async () => {
+AppDataSource.initialize().then(async () => {
 
     // create express app
     const app = express();
@@ -46,23 +46,41 @@ createConnection().then(async () => {
 
     // start express server
     let server = app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-    let io = require('socket.io').listen(server);
+    
+    // create socket.io server (modern API)
+    const io = new socketIO.Server(server, {
+        cors: {
+            origin: "http://localhost:4200",
+            methods: ["GET", "POST"]
+        }
+    });
 
     // export io to use:
-    //const socket = require('../index');
-    //socket.emit('updateProducts', products);
     module.exports = io;
-    
+
+    // Usar verifyJwt del middleware para proteger la conexión
+    const { verifyJwt } = require('./middlewares/jwt');
+    io.use((socket, next) => {
+        // Obtener el token del handshake (auth, query, headers)
+        const token = socket.handshake.auth?.token || socket.handshake.query?.token || socket.handshake.headers?.auth;
+        let jwtPayload;
+        try {
+            jwtPayload = verifyJwt(token);
+            socket.data.jwtPayload = jwtPayload;
+            next();
+        } catch (e) {
+            console.log('JWT Error:', e.message);
+            next(new Error('Not Authorized'));
+        }
+    });
+
     io.on('connection', function (socket) {
         // Cada vez que se conecta un cliente mostramos un mensaje en la consola de Node.
         console.log('++++ Nuevo cliente conectado ++++');  
-        
         socket.emit('connected', true);
-        
         socket.on('disconnect', function () {
             console.log('user disconnected');
         });
-
     });
 
     //io.emit('connected', true);
